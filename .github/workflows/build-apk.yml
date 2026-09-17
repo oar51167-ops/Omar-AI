@@ -22,23 +22,36 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android
-        uses: android-actions/setup-android@v3
-
-      - name: Accept licenses
-        run: yes | sdkmanager --licenses
-
-      - name: Build
+      - name: Setup Android SDK
         run: |
-          GRADLEW=$(find project -name gradlew -type f | head -1)
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+
+      - name: Find Gradle project
+        run: |
+          find project -name gradlew -type f -print
+
+      - name: Build APK
+        run: |
+          GRADLEW=$(find project -name gradlew -type f | head -n 1)
+
           if [ -z "$GRADLEW" ]; then
-            echo "gradlew not found"
+            echo "ERROR: gradlew was not found."
             exit 1
           fi
-          DIR=$(dirname "$GRADLEW")
-          cd "$DIR"
+
+          PROJECT_DIR=$(dirname "$GRADLEW")
+          echo "Project: $PROJECT_DIR"
+
+          cd "$PROJECT_DIR"
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Find APK
+        run: |
+          find project -type f -name "*.apk" -print
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
