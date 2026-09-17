@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -20,39 +20,25 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '17'
 
-      - name: Setup Android SDK
+      - name: Setup Android
+        uses: android-actions/setup-android@v3
+
+      - name: Accept licenses
+        run: yes | sdkmanager --licenses
+
+      - name: Build
         run: |
-          export ANDROID_HOME=$ANDROID_SDK_ROOT
-          yes | sdkmanager --licenses || true
-          sdkmanager "platform-tools"
-
-      - name: Find Gradle project
-        run: |
-          echo "Searching for Gradle project..."
-          find project -name gradlew -type f -print
-
-      - name: Build APK
-        run: |
-          GRADLEW=$(find project -name gradlew -type f | head -n 1)
-
+          GRADLEW=$(find project -name gradlew -type f | head -1)
           if [ -z "$GRADLEW" ]; then
-            echo "ERROR: gradlew was not found in the ZIP project."
+            echo "gradlew not found"
             exit 1
           fi
-
-          PROJECT_DIR=$(dirname "$GRADLEW")
-          echo "Gradle project found at: $PROJECT_DIR"
-
-          cd "$PROJECT_DIR"
+          DIR=$(dirname "$GRADLEW")
+          cd "$DIR"
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
-
-      - name: Find APK
-        run: |
-          echo "Searching for APK..."
-          find project -type f -name "*.apk" -print
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
