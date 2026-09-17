@@ -1,61 +1,37 @@
-name: Build Omar AI APK
-
-on:
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Unzip project
-        run: |
-          mkdir project
-          unzip -q "omar-ai-fixed (3).zip" -d project
-
-      - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Setup Android SDK
-        run: |
-          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
-          echo "$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
-          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
-          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses || true
-
-      - name: Find Gradle project
-        run: |
-          find project -name gradlew -type f -print
-
-      - name: Build APK
-        run: |
-          GRADLEW=$(find project -name gradlew -type f | head -n 1)
-
-          if [ -z "$GRADLEW" ]; then
-            echo "ERROR: gradlew was not found."
-            exit 1
-          fi
-
-          PROJECT_DIR=$(dirname "$GRADLEW")
-          echo "Project: $PROJECT_DIR"
-
-          cd "$PROJECT_DIR"
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
-
-      - name: Find APK
-        run: |
-          find project -type f -name "*.apk" -print
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Omar-AI-APK
-          path: project/**/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+Skip to content
+oar51167-ops
+Omar-AI
+Repository navigation
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security and quality
+Insights
+Settings
+Build Omar AI APK
+Build Omar AI APK #7
+All jobs
+Run details
+Annotations
+1 error and 1 warning
+build
+failed on Sep 18, 2026 in 15s
+Search logs
+1s
+1s
+0s
+0s
+9s
+0s
+0s
+Run GRADLEW=$(find project -name gradlew -type f | head -n 1)
+ERROR: gradlew was not found.
+Error: Process completed with exit code 1.
+0s
+0s
+0s
+0s
+0s
