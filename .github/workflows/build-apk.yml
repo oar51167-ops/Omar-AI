@@ -22,26 +22,37 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Setup Android
-        uses: android-actions/setup-android@v3
-
-      - name: Accept Android licenses
-        run: yes | sdkmanager --licenses || true
+      - name: Setup Android SDK
+        run: |
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
+          yes | sdkmanager --licenses || true
+          sdkmanager "platform-tools"
 
       - name: Find Gradle project
-        run: find project -name gradlew -type f -print
+        run: |
+          echo "Searching for Gradle project..."
+          find project -name gradlew -type f -print
 
       - name: Build APK
         run: |
           GRADLEW=$(find project -name gradlew -type f | head -n 1)
+
           if [ -z "$GRADLEW" ]; then
-            echo "gradlew not found"
+            echo "ERROR: gradlew was not found in the ZIP project."
             exit 1
           fi
+
           PROJECT_DIR=$(dirname "$GRADLEW")
+          echo "Gradle project found at: $PROJECT_DIR"
+
           cd "$PROJECT_DIR"
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
+
+      - name: Find APK
+        run: |
+          echo "Searching for APK..."
+          find project -type f -name "*.apk" -print
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
