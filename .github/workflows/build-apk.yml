@@ -25,6 +25,9 @@ jobs:
       - name: Setup Android
         uses: android-actions/setup-android@v3
 
+      - name: Accept Android licenses
+        run: yes | sdkmanager --licenses
+
       - name: Build APK
         working-directory: project
         run: |
